@@ -113,7 +113,7 @@ func (e *NuvlaEdgeOTCExporter) checkIndexTemplatesInElasticSearch() error {
 func (e *NuvlaEdgeOTCExporter) createTSDSTemplate(indexPattern *string) map[string]interface{} {
 	template := map[string]interface{}{
 		"index_patterns": []string{*indexPattern},
-		"data stream":    map[string]interface{}{},
+		"data_stream":    map[string]interface{}{},
 		"template": map[string]interface{}{
 			"settings": map[string]interface{}{
 				"index.mode": "time_series",
