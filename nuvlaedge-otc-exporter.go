@@ -180,17 +180,24 @@ func (e *NuvlaEdgeOTCExporter) createNewTSDS(timeSeries string) error {
 		res, err := req.Do(context.Background(), e.esClient)
 		if err != nil {
 			e.settings.Logger.Error("Error creating the index template: ", zap.Error(err))
+			return fmt.Errorf("error creating the index template: %s", err.Error())
 		}
 		defer func(Body io.ReadCloser) {
-			err := Body.Close()
-			if err != nil {
-				e.settings.Logger.Error("Error closing the response body: ", zap.Error(err))
+			errClose := Body.Close()
+			if errClose != nil {
+				e.settings.Logger.Error("Error closing the response body: ", zap.Error(errClose))
 			}
 		}(res.Body)
 
 		if res.IsError() {
-			e.settings.Logger.Error("Error creating the index template res is Error: ", zap.Error(err))
-			return err
+			bodyBytes, errRes := io.ReadAll(res.Body)
+			if errRes != nil {
+				e.settings.Logger.Error("Error reading the response body: ", zap.Error(errRes))
+				return errRes
+			}
+			bodyString := string(bodyBytes)
+			e.settings.Logger.Error("Error creating the index template res is Error: ", zap.String("bodyString", bodyString))
+			return fmt.Errorf("error creating the index template: %s", bodyString)
 		}
 		indicesPatterns[templateName] = true
 	}
