@@ -170,7 +170,7 @@ func (e *NuvlaEdgeOTCExporter) createNewTSDS(timeSeries string) error {
 		}
 
 		templateName := fmt.Sprintf("%s-%s-template", e.cfg.ElasticSearch_config.IndexPrefix, timeSeries)
-		e.settings.Logger.Info("Creating index template ", zap.String("templateName", templateName))
+		e.settings.Logger.Info("Creating index template new print ", zap.String("templateName", templateName))
 		// Create the index template
 		req := esapi.IndicesPutIndexTemplateRequest{
 			Name: templateName,
