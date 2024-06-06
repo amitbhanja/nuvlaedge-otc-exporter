@@ -137,9 +137,9 @@ func (e *NuvlaEdgeOTCExporter) createTSDSTemplate(indexPattern *string) map[stri
 		}
 		metricName := keys[0]
 		metrictype := keys[1]
-		is_dimension := keys[2]
+		isDimension := keys[2]
 
-		if is_dimension == "true" {
+		if isDimension == "true" {
 			template["template"].(map[string]interface{})["mappings"].(map[string]interface{})["properties"].(map[string]interface{})[metricName] = map[string]interface{}{
 				"type":                  "keyword",
 				"time_series_dimension": "true",

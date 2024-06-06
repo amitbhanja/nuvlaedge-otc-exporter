@@ -12,7 +12,7 @@ import (
 )
 
 func createDefaultConfig() component.Config {
-	return Config{
+	return &Config{
 		ElasticSearch_config: &ElasticSearchConfig{
 			endpoint:    "http://localhost:9200",
 			insecure:    true,
