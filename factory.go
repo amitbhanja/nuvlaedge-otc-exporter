@@ -3,6 +3,7 @@ package nuvlaedge_otc_exporter
 import (
 	"context"
 	"errors"
+	"fmt"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config/configretry"
 	"go.opentelemetry.io/collector/consumer"
@@ -37,6 +38,7 @@ func createMetricsExporter(
 	set exporter.CreateSettings,
 	cfg component.Config,
 ) (exporter.Metrics, error) {
+	fmt.Printf("createMetricsExporter being called \n")
 	oCfg := cfg.(*Config)
 	_, err := url.Parse(oCfg.ElasticSearch_config.endpoint)
 	if err != nil {
