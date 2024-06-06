@@ -256,9 +256,9 @@ func (e *NuvlaEdgeOTCExporter) addDocsInTSDS(timeSeries *string,
 		curr = curr + " }\n"
 		completeMetric = completeMetric + curr
 	}
-	byte_complete := []byte(completeMetric)
-	buf.Grow(len(byte_complete))
-	buf.Write(byte_complete)
+	byteComplete := []byte(completeMetric)
+	buf.Grow(len(byteComplete))
+	buf.Write(byteComplete)
 
 	req := esapi.BulkRequest{
 		Index: *timeSeries,
@@ -322,4 +322,4 @@ func updateMetric(serviceName *string, metric *pmetric.Metric, metricMap *[]map[
 	}
 }
 
-var indicesPatterns = map[string]bool{}
+var indicesPatterns = make(map[string]bool)
