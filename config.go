@@ -4,6 +4,7 @@ import (
 	"errors"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config/configretry"
+	"go.opentelemetry.io/collector/confmap"
 	"go.opentelemetry.io/collector/exporter/exporterhelper"
 )
 
@@ -37,4 +38,9 @@ func (cfg *Config) Validate() error {
 	return nil
 }
 
+func (cfg *Config) Unmarshal(conf *confmap.Conf) error {
+	return conf.Unmarshal(cfg)
+}
+
 var _ component.Config = (*Config)(nil)
+var _ confmap.Unmarshaler = (*Config)(nil)
