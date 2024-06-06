@@ -160,7 +160,7 @@ func (e *NuvlaEdgeOTCExporter) createTSDSTemplate(indexPattern *string) map[stri
 
 func (e *NuvlaEdgeOTCExporter) createNewTSDS(timeSeries string) error {
 	if _, ok := indicesPatterns[timeSeries]; !ok {
-		indexPattern := fmt.Sprintf("%s-%s-*", e.cfg.ElasticSearch_config.IndexPrefix, timeSeries)
+		indexPattern := fmt.Sprintf("%s-%s*", e.cfg.ElasticSearch_config.IndexPrefix, timeSeries)
 		template := e.createTSDSTemplate(&indexPattern)
 
 		templateJSON, err := json.Marshal(template)
@@ -216,20 +216,20 @@ func (e *NuvlaEdgeOTCExporter) ConsumeMetrics(_ context.Context, pm pmetric.Metr
 			if ms.Len() == 0 {
 				continue
 			}
-			timeSeriesName := fmt.Sprintf("%s-%s", serviceName, nuvlaDeploymentUUID.Str())
-			timeSeriesName = timeSeriesName + "-" + sc.Scope().Name()
-			err := e.createNewTSDS(timeSeriesName)
+			err := e.createNewTSDS(serviceName)
+			e.settings.Logger.Info("Creating TSDS ", zap.String("timeSeriesName", serviceName), zap.Error(err))
 			if err != nil {
 				e.settings.Logger.Error("Error creating the TSDS: ", zap.Error(err))
 				return err
 			}
-
+			uuid := nuvlaDeploymentUUID.Str()
 			var metricMap []map[string]interface{}
 			for k := 0; k < ms.Len(); k++ {
 				currMetric := ms.At(k)
-				updateMetric(&serviceName, &currMetric, &metricMap)
+				updateMetric(&serviceName, &currMetric, &metricMap, &uuid)
 			}
-			err = e.addDocsInTSDS(&timeSeriesName, &metricMap)
+			indexName := fmt.Sprintf("%s-%s", e.cfg.ElasticSearch_config.IndexPrefix, serviceName)
+			err = e.addDocsInTSDS(&indexName, &metricMap)
 			if err != nil {
 				e.settings.Logger.Error("Error adding documents in TSDS: ", zap.Error(err))
 				return err
@@ -284,7 +284,8 @@ func (e *NuvlaEdgeOTCExporter) addDocsInTSDS(timeSeries *string,
 	return nil
 }
 
-func updateMetric(serviceName *string, metric *pmetric.Metric, metricMap *[]map[string]interface{}) {
+func updateMetric(serviceName *string, metric *pmetric.Metric,
+	metricMap *[]map[string]interface{}, deploymentuuid *string) {
 
 	var dp pmetric.NumberDataPointSlice
 
@@ -299,11 +300,12 @@ func updateMetric(serviceName *string, metric *pmetric.Metric, metricMap *[]map[
 
 	metricName := metric.Name()
 	metricName, _ = strings.CutPrefix(*serviceName+"_", metricName)
-	var currMetricMap map[string]interface{}
+	var currMetricMap = make(map[string]interface{})
 	for i := 0; i < dp.Len(); i++ {
 		datapoint := dp.At(i)
 
 		currMetricMap["@timestamp"] = datapoint.Timestamp()
+		currMetricMap["nuvla.deployment.uuid"] = *deploymentuuid
 
 		switch datapoint.ValueType() {
 		case pmetric.NumberDataPointValueTypeInt:
