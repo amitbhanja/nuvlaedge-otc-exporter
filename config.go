@@ -13,20 +13,20 @@ type Config struct {
 }
 
 type ElasticSearchConfig struct {
-	endpoint            string                       `mapstructure:"endpoint"`
-	insecure            bool                         `mapstructure:"insecure"`
-	caFile              string                       `mapstructure:"ca_file"`
-	indexPrefix         string                       `mapstructure:"index_prefix"`
+	Endpoint            string                       `mapstructure:"endpoint"`
+	Insecure            bool                         `mapstructure:"insecure"`
+	CaFile              string                       `mapstructure:"ca_file"`
+	IndexPrefix         string                       `mapstructure:"index_prefix"`
 	QueueConfig         exporterhelper.QueueSettings `mapstructure:"sending_queue"`
 	RetryConfig         configretry.BackOffConfig    `mapstructure:"retry_on_failure"`
-	metricsTobeExported []string                     `mapstructure:"metrics"`
+	MetricsTobeExported []string                     `mapstructure:"metrics"`
 }
 
 func (cfg *Config) Validate() error {
-	if cfg.ElasticSearch_config.endpoint == "" {
+	if cfg.ElasticSearch_config.Endpoint == "" {
 		return errors.New("endpoint must be specified")
 	}
-	if !cfg.ElasticSearch_config.insecure && cfg.ElasticSearch_config.caFile == "" {
+	if !cfg.ElasticSearch_config.Insecure && cfg.ElasticSearch_config.CaFile == "" {
 		return errors.New("need to give the ca_file if we want to secure connection")
 	}
 	if err := cfg.ElasticSearch_config.QueueConfig.Validate(); err != nil {
