@@ -189,7 +189,7 @@ func (e *NuvlaEdgeOTCExporter) createNewTSDS(timeSeries string) error {
 		}(res.Body)
 
 		if res.IsError() {
-			e.settings.Logger.Error("Error creating the index template: ", zap.Error(err))
+			e.settings.Logger.Error("Error creating the index template res is Error: ", zap.Error(err))
 			return err
 		}
 		indicesPatterns[templateName] = true
