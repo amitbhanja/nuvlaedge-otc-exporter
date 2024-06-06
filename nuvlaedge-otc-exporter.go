@@ -41,10 +41,10 @@ func newNuvlaEdgeOTCExporter(
 
 func convertToESConfig(cfg *ElasticSearchConfig, logger *zap.Logger) (elasticsearch.Config, error) {
 	esConfig := elasticsearch.Config{
-		Addresses: []string{cfg.endpoint},
+		Addresses: []string{cfg.Endpoint},
 	}
-	if !cfg.insecure {
-		cert, err := os.ReadFile(cfg.caFile)
+	if !cfg.Insecure {
+		cert, err := os.ReadFile(cfg.CaFile)
 		if err == nil {
 			logger.Error("Error reading CA file", zap.Error(err))
 		}
@@ -92,7 +92,7 @@ func (e *NuvlaEdgeOTCExporter) checkIndexTemplatesInElasticSearch() error {
 		e.settings.Logger.Error("Error parsing the response body: ", zap.Error(err))
 	}
 
-	patternRegexCheck := e.cfg.ElasticSearch_config.indexPrefix + "*"
+	patternRegexCheck := e.cfg.ElasticSearch_config.IndexPrefix + "*"
 	re, _ := regexp.Compile(patternRegexCheck)
 
 	for _, template := range templates["index_templates"].([]interface{}) {
@@ -128,7 +128,7 @@ func (e *NuvlaEdgeOTCExporter) createTSDSTemplate(indexPattern *string) map[stri
 		},
 	}
 
-	for _, metricExport := range e.cfg.ElasticSearch_config.metricsTobeExported {
+	for _, metricExport := range e.cfg.ElasticSearch_config.MetricsTobeExported {
 		keys := strings.Split(metricExport, ",")
 		if len(keys) != 3 {
 			e.settings.Logger.Error("Require three parameters <metric_name>,<metric_type>,<is_dimension>"+
@@ -160,7 +160,7 @@ func (e *NuvlaEdgeOTCExporter) createTSDSTemplate(indexPattern *string) map[stri
 
 func (e *NuvlaEdgeOTCExporter) createNewTSDS(timeSeries string) error {
 	if _, ok := indicesPatterns[timeSeries]; !ok {
-		indexPattern := fmt.Sprintf("%s-%s-*", e.cfg.ElasticSearch_config.indexPrefix, timeSeries)
+		indexPattern := fmt.Sprintf("%s-%s-*", e.cfg.ElasticSearch_config.IndexPrefix, timeSeries)
 		template := e.createTSDSTemplate(&indexPattern)
 
 		templateJSON, err := json.Marshal(template)
@@ -169,7 +169,7 @@ func (e *NuvlaEdgeOTCExporter) createNewTSDS(timeSeries string) error {
 			return err
 		}
 
-		templateName := fmt.Sprintf("%s-%s-template", e.cfg.ElasticSearch_config.indexPrefix, timeSeries)
+		templateName := fmt.Sprintf("%s-%s-template", e.cfg.ElasticSearch_config.IndexPrefix, timeSeries)
 		e.settings.Logger.Info("Creating index template ", zap.String("templateName", templateName))
 		// Create the index template
 		req := esapi.IndicesPutIndexTemplateRequest{
