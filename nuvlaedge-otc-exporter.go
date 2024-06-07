@@ -236,6 +236,7 @@ func (e *NuvlaEdgeOTCExporter) ConsumeMetrics(_ context.Context, pm pmetric.Metr
 				updateMetric(&serviceName, &currMetric, &metricMap, &uuid)
 			}
 			indexName := fmt.Sprintf("%s-%s", e.cfg.ElasticSearch_config.IndexPrefix, serviceName)
+			e.settings.Logger.Info("Adding documents in TSDS ", zap.String("indexName", indexName), zap.Any("metricMap", metricMap))
 			err = e.addDocsInTSDS(&indexName, &metricMap)
 			if err != nil {
 				e.settings.Logger.Error("Error adding documents in TSDS: ", zap.Error(err))
@@ -263,6 +264,7 @@ func (e *NuvlaEdgeOTCExporter) addDocsInTSDS(timeSeries *string,
 		curr = curr + " }\n"
 		completeMetric = completeMetric + curr
 	}
+	e.settings.Logger.Info("Complete Metric ", zap.String("completeMetric", completeMetric)
 	byteComplete := []byte(completeMetric)
 	buf.Grow(len(byteComplete))
 	buf.Write(byteComplete)
