@@ -92,6 +92,7 @@ func (e *NuvlaEdgeOTCExporter) checkIndexTemplatesInElasticSearch() error {
 		e.settings.Logger.Error("Error parsing the response body: ", zap.Error(err))
 	}
 
+	e.settings.Logger.Info("Index templates in ElasticSearch: ", zap.Any("templates", templates))
 	patternRegexCheck := e.cfg.ElasticSearch_config.IndexPrefix + "*"
 	re, _ := regexp.Compile(patternRegexCheck)
 
