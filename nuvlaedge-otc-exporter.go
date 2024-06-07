@@ -125,6 +125,10 @@ func (e *NuvlaEdgeOTCExporter) createTSDSTemplate(indexPattern *string) map[stri
 					"@timestamp": map[string]interface{}{
 						"type": "date",
 					},
+					"metricInfo": map[string]interface{}{
+						"type":                  "keyword",
+						"time_series_dimension": "true",
+					},
 				},
 			},
 		},
@@ -344,6 +348,8 @@ func (e *NuvlaEdgeOTCExporter) updateMetric(serviceName *string, metric *pmetric
 			currMetricMap[k] = v.AsString()
 			return true
 		})
+		// TODO this is added to make the metric unique. Need to find a better way.
+		currMetricMap["metricInfo"] = metricName
 		*metricMap = append(*metricMap, currMetricMap)
 	}
 	e.settings.Logger.Info("MetricMap in updateMetric", zap.Any("metricMap", metricMap))
