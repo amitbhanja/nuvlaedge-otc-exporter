@@ -14,7 +14,6 @@ import (
 	"go.uber.org/zap"
 	"io"
 	"os"
-	"regexp"
 	"strings"
 )
 
@@ -70,7 +69,9 @@ func (e *NuvlaEdgeOTCExporter) Start(_ context.Context, _ component.Host) error 
 }
 
 func (e *NuvlaEdgeOTCExporter) checkIndexTemplatesInElasticSearch() error {
-	req := esapi.IndicesGetIndexTemplateRequest{}
+	req := esapi.IndicesGetIndexTemplateRequest{
+		Name: e.cfg.ElasticSearch_config.IndexPrefix + "-*",
+	}
 	res, err := req.Do(context.Background(), e.esClient)
 	if err != nil {
 		e.settings.Logger.Error("Error checking index templates in ElasticSearch: ", zap.Error(err))
@@ -93,19 +94,13 @@ func (e *NuvlaEdgeOTCExporter) checkIndexTemplatesInElasticSearch() error {
 	}
 
 	e.settings.Logger.Info("Index templates in ElasticSearch: ", zap.Any("templates", templates))
-	patternRegexCheck := e.cfg.ElasticSearch_config.IndexPrefix + "*"
-	re, _ := regexp.Compile(patternRegexCheck)
 
 	for _, template := range templates["index_templates"].([]interface{}) {
 		templateMap := template.(map[string]interface{})
 		indexTemplateMap := templateMap["index_template"].(map[string]interface{})
-		patterns := indexTemplateMap["index_patterns"].([]interface{})
-		for _, pattern := range patterns {
-			match := re.MatchString(pattern.(string))
-			if match {
-				indicesPatterns[pattern.(string)] = true
-			}
-		}
+		templateName := indexTemplateMap["name"]
+		e.settings.Logger.Info("Index template name: ", zap.String("templateName", templateName.(string)))
+		templatesPresent[templateName.(string)] = true
 	}
 
 	return nil
@@ -160,7 +155,8 @@ func (e *NuvlaEdgeOTCExporter) createTSDSTemplate(indexPattern *string) map[stri
 }
 
 func (e *NuvlaEdgeOTCExporter) createNewTSDS(timeSeries string) error {
-	if _, ok := indicesPatterns[timeSeries]; !ok {
+	templateName := fmt.Sprintf("%s-%s-template", e.cfg.ElasticSearch_config.IndexPrefix, timeSeries)
+	if _, ok := templatesPresent[templateName]; !ok {
 		indexPattern := fmt.Sprintf("%s-%s*", e.cfg.ElasticSearch_config.IndexPrefix, timeSeries)
 		template := e.createTSDSTemplate(&indexPattern)
 
@@ -170,7 +166,6 @@ func (e *NuvlaEdgeOTCExporter) createNewTSDS(timeSeries string) error {
 			return err
 		}
 
-		templateName := fmt.Sprintf("%s-%s-template", e.cfg.ElasticSearch_config.IndexPrefix, timeSeries)
 		e.settings.Logger.Info("Creating index template new print ", zap.String("templateName", templateName))
 		// Create the index template
 		req := esapi.IndicesPutIndexTemplateRequest{
@@ -194,7 +189,7 @@ func (e *NuvlaEdgeOTCExporter) createNewTSDS(timeSeries string) error {
 		if errorOccured {
 			return fmt.Errorf("error creating the index template: %s", responseStr)
 		}
-		indicesPatterns[templateName] = true
+		templatesPresent[templateName] = true
 	}
 	e.settings.Logger.Info("Index template created ", zap.String("timeSeries", timeSeries))
 	return nil
@@ -343,4 +338,4 @@ func updateMetric(serviceName *string, metric *pmetric.Metric,
 	}
 }
 
-var indicesPatterns = make(map[string]bool)
+var templatesPresent = make(map[string]bool)
