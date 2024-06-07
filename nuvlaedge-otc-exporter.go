@@ -323,8 +323,8 @@ func updateMetric(serviceName *string, metric *pmetric.Metric,
 	var currMetricMap = make(map[string]interface{})
 	for i := 0; i < dp.Len(); i++ {
 		datapoint := dp.At(i)
-
-		currMetricMap["@timestamp"] = datapoint.Timestamp().String()
+		timestamp := datapoint.Timestamp().AsTime().Format("2006-01-02T15:04:05.999Z07:00")
+		currMetricMap["@timestamp"] = timestamp
 		currMetricMap["nuvla.deployment.uuid"] = *deploymentuuid
 
 		switch datapoint.ValueType() {
