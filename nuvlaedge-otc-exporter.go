@@ -264,7 +264,7 @@ func (e *NuvlaEdgeOTCExporter) addDocsInTSDS(timeSeries *string,
 		curr = curr + " }\n"
 		completeMetric = completeMetric + curr
 	}
-	e.settings.Logger.Info("Complete Metric ", zap.String("completeMetric", completeMetric)
+	e.settings.Logger.Info("Complete Metric ", zap.String("completeMetric", completeMetric))
 	byteComplete := []byte(completeMetric)
 	buf.Grow(len(byteComplete))
 	buf.Write(byteComplete)
