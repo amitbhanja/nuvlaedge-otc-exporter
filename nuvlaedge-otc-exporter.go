@@ -189,20 +189,29 @@ func (e *NuvlaEdgeOTCExporter) createNewTSDS(timeSeries string) error {
 			}
 		}(res.Body)
 
-		if res.IsError() {
-			bodyBytes, errRes := io.ReadAll(res.Body)
-			if errRes != nil {
-				e.settings.Logger.Error("Error reading the response body: ", zap.Error(errRes))
-				return errRes
-			}
-			bodyString := string(bodyBytes)
-			e.settings.Logger.Error("Error creating the index template res is Error: ", zap.String("bodyString", bodyString))
-			return fmt.Errorf("error creating the index template: %s", bodyString)
+		responseStr, errorOccured := e.readElasticSearchResponse(res)
+		if errorOccured {
+			return fmt.Errorf("error creating the index template: %s", responseStr)
 		}
 		indicesPatterns[templateName] = true
 	}
 	e.settings.Logger.Info("Index template created ", zap.String("timeSeries", timeSeries))
 	return nil
+}
+
+func (e *NuvlaEdgeOTCExporter) readElasticSearchResponse(res *esapi.Response) (string, bool) {
+	bodyBytes, errRes := io.ReadAll(res.Body)
+	if errRes != nil {
+		e.settings.Logger.Error("Error reading the response body: ", zap.Error(errRes))
+		return errRes.Error(), false
+	}
+	bodyString := string(bodyBytes)
+	if res.IsError() {
+		e.settings.Logger.Error("Error performing operation in ES ", zap.String("bodyString", bodyString))
+		return bodyString, false
+	}
+	e.settings.Logger.Info("Response from ES ", zap.String("bodyString", bodyString))
+	return bodyString, true
 }
 
 func (e *NuvlaEdgeOTCExporter) ConsumeMetrics(_ context.Context, pm pmetric.Metrics) error {
@@ -286,9 +295,9 @@ func (e *NuvlaEdgeOTCExporter) addDocsInTSDS(timeSeries *string,
 		}
 	}(res.Body)
 
-	if res.IsError() {
-		e.settings.Logger.Error("Error performing the bulk insert operation ", zap.Error(err))
-		return fmt.Errorf("error performing the bulk insert operation: %s", res.String())
+	responseStr, errorOccured := e.readElasticSearchResponse(res)
+	if errorOccured {
+		return fmt.Errorf("error adding documents in TSDS: %s", responseStr)
 	}
 	return nil
 }
