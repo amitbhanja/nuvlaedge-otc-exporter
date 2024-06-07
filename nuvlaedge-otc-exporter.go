@@ -206,15 +206,15 @@ func (e *NuvlaEdgeOTCExporter) readElasticSearchResponse(res *esapi.Response) (s
 	bodyBytes, errRes := io.ReadAll(res.Body)
 	if errRes != nil {
 		e.settings.Logger.Error("Error reading the response body: ", zap.Error(errRes))
-		return errRes.Error(), false
+		return errRes.Error(), true
 	}
 	bodyString := string(bodyBytes)
 	if res.IsError() {
 		e.settings.Logger.Error("Error performing operation in ES ", zap.String("bodyString", bodyString))
-		return bodyString, false
+		return bodyString, true
 	}
 	e.settings.Logger.Info("Response from ES ", zap.String("bodyString", bodyString))
-	return bodyString, true
+	return bodyString, false
 }
 
 func (e *NuvlaEdgeOTCExporter) ConsumeMetrics(_ context.Context, pm pmetric.Metrics) error {
