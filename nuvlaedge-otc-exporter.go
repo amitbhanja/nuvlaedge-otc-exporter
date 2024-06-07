@@ -346,7 +346,7 @@ func (e *NuvlaEdgeOTCExporter) updateMetric(serviceName *string, metric *pmetric
 		})
 		*metricMap = append(*metricMap, currMetricMap)
 	}
-	e.settings.Logger.Info("MetricMap in updateMetric", zap.Any("metricMap", metricMap)
+	e.settings.Logger.Info("MetricMap in updateMetric", zap.Any("metricMap", metricMap))
 }
 
 var templatesPresent = make(map[string]bool)
