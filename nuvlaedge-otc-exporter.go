@@ -95,12 +95,12 @@ func (e *NuvlaEdgeOTCExporter) checkIndexTemplatesInElasticSearch() error {
 
 	e.settings.Logger.Info("Index templates in ElasticSearch: ", zap.Any("templates", templates))
 
-	for _, template := range templates["index_templates"].([]interface{}) {
-		templateMap := template.(map[string]interface{})
-		indexTemplateMap := templateMap["index_template"].(map[string]interface{})
-		templateName := indexTemplateMap["name"]
-		e.settings.Logger.Info("Index template name: ", zap.String("templateName", templateName.(string)))
-		templatesPresent[templateName.(string)] = true
+	for _, template := range templates["index_templates"].([]map[string]interface{}) {
+		indexTemplateMap := template["index_template"].(map[string]interface{})
+		e.settings.Logger.Info("Index template map: ", zap.Any("indexTemplateMap", indexTemplateMap))
+		templateName := indexTemplateMap["name"].(string)
+		e.settings.Logger.Info("Template name: ", zap.String("templateName", templateName))
+		templatesPresent[templateName] = true
 	}
 
 	return nil
