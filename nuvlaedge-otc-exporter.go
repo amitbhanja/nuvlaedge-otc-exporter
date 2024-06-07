@@ -15,7 +15,6 @@ import (
 	"io"
 	"os"
 	"strings"
-	"time"
 )
 
 var (
@@ -245,7 +244,7 @@ func (e *NuvlaEdgeOTCExporter) ConsumeMetrics(_ context.Context, pm pmetric.Metr
 			var metricMap []map[string]interface{}
 			for k := 0; k < ms.Len(); k++ {
 				currMetric := ms.At(k)
-				updateMetric(&serviceName, &currMetric, &metricMap, &uuid)
+				e.updateMetric(&serviceName, &currMetric, &metricMap, &uuid)
 			}
 			indexName := fmt.Sprintf("%s-%s", e.cfg.ElasticSearch_config.IndexPrefix, serviceName)
 			e.settings.Logger.Info("Adding documents in TSDS ", zap.String("indexName", indexName), zap.Any("metricMap", metricMap))
@@ -305,7 +304,7 @@ func (e *NuvlaEdgeOTCExporter) addDocsInTSDS(timeSeries *string,
 	return nil
 }
 
-func updateMetric(serviceName *string, metric *pmetric.Metric,
+func (e *NuvlaEdgeOTCExporter) updateMetric(serviceName *string, metric *pmetric.Metric,
 	metricMap *[]map[string]interface{}, deploymentuuid *string) {
 
 	var dp pmetric.NumberDataPointSlice
@@ -321,14 +320,15 @@ func updateMetric(serviceName *string, metric *pmetric.Metric,
 
 	metricName := metric.Name()
 	metricName, _ = strings.CutPrefix(metricName, *serviceName+"_")
-	var currMetricMap = make(map[string]interface{})
 	for i := 0; i < dp.Len(); i++ {
+		var currMetricMap = make(map[string]interface{})
 		datapoint := dp.At(i)
+		e.settings.Logger.Info("Datapoint ", zap.Any("datapoint", datapoint))
 		// TODO there could be situations of timestamps being very close or same.
 		// Need to handle that.
-		//timestamp := datapoint.Timestamp().AsTime().Format("2006-01-02T15:04:05.999Z07:00")
-		currMetricMap["@timestamp"] = time.Now().Format("2006-01-02T15:04:05.999Z07:00")
-		time.Sleep(2 * time.Millisecond)
+		timestamp := datapoint.Timestamp().AsTime().Format("2006-01-02T15:04:05.999Z07:00")
+		currMetricMap["@timestamp"] = timestamp
+		//time.Sleep(2 * time.Millisecond)
 		currMetricMap["nuvla.deployment.uuid"] = *deploymentuuid
 
 		switch datapoint.ValueType() {
@@ -346,6 +346,7 @@ func updateMetric(serviceName *string, metric *pmetric.Metric,
 		})
 		*metricMap = append(*metricMap, currMetricMap)
 	}
+	e.settings.Logger.Info("MetricMap in updateMetric", zap.Any("metricMap", metricMap)
 }
 
 var templatesPresent = make(map[string]bool)
