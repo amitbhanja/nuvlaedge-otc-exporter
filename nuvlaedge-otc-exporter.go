@@ -15,6 +15,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 )
 
 var (
@@ -323,8 +324,11 @@ func updateMetric(serviceName *string, metric *pmetric.Metric,
 	var currMetricMap = make(map[string]interface{})
 	for i := 0; i < dp.Len(); i++ {
 		datapoint := dp.At(i)
-		timestamp := datapoint.Timestamp().AsTime().Format("2006-01-02T15:04:05.999Z07:00")
-		currMetricMap["@timestamp"] = timestamp
+		// TODO there could be situations of timestamps being very close or same.
+		// Need to handle that.
+		//timestamp := datapoint.Timestamp().AsTime().Format("2006-01-02T15:04:05.999Z07:00")
+		currMetricMap["@timestamp"] = time.Now().Format("2006-01-02T15:04:05.999999999Z07:00")
+		time.Sleep(10 * time.Nanosecond)
 		currMetricMap["nuvla.deployment.uuid"] = *deploymentuuid
 
 		switch datapoint.ValueType() {
