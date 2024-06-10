@@ -4,6 +4,12 @@ like elastic search, nuvla api and other cloud endpoints like S3, GCS etc.
 
 TODO : Nuvla APi and other cloud endpoints support will come later.
 
+For elasticsearch, the exporter would create a timeseries resource (<index_prefix>-<application_name>) if not present.
+Then all the metric datapoints are stored. We take the data attributes along with metrics data and nuvla.deployment.uuid.
+So, the exporter cannot in the current version create timeseries resource dynamically based on the data sent by the
+application. We should provide in the configuration the list of metrics along with the data attributes.
+
+
 ## Configuration options
 
 - elasticsearch
