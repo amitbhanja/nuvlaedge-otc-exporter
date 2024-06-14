@@ -14,14 +14,18 @@ import (
 
 func createDefaultConfig() component.Config {
 	return &Config{
-		ElasticSearch_config: &ElasticSearchConfig{
+		ElasticsearchConfig: &ElasticSearchConfig{
+			Enabled:     false,
 			Endpoint:    "http://localhost:9200",
 			Insecure:    true,
 			CaFile:      "",
 			IndexPrefix: "nuvlaedge-opentelemetry-",
-			QueueConfig: exporterhelper.NewDefaultQueueSettings(),
-			RetryConfig: configretry.NewDefaultBackOffConfig(),
 		},
+		NuvlaApiConfig: &NuvlaApiConfig{
+			Enabled: false,
+		},
+		QueueConfig: exporterhelper.NewDefaultQueueSettings(),
+		RetryConfig: configretry.NewDefaultBackOffConfig(),
 	}
 }
 
@@ -40,7 +44,7 @@ func createMetricsExporter(
 ) (exporter.Metrics, error) {
 	fmt.Printf("createMetricsExporter being called \n")
 	oCfg := cfg.(*Config)
-	_, err := url.Parse(oCfg.ElasticSearch_config.Endpoint)
+	_, err := url.Parse(oCfg.ElasticsearchConfig.Endpoint)
 	if err != nil {
 		return nil, errors.New("endpoint must be a valid URL")
 	}
@@ -57,7 +61,7 @@ func createMetricsExporter(
 		exporterhelper.WithCapabilities(consumer.Capabilities{MutatesData: false}),
 		// explicitly disable since we rely on http.Client timeout logic.
 		exporterhelper.WithTimeout(exporterhelper.TimeoutSettings{Timeout: 0}),
-		exporterhelper.WithRetry(oCfg.ElasticSearch_config.RetryConfig),
-		exporterhelper.WithQueue(oCfg.ElasticSearch_config.QueueConfig),
+		exporterhelper.WithRetry(oCfg.RetryConfig),
+		exporterhelper.WithQueue(oCfg.QueueConfig),
 	)
 }
