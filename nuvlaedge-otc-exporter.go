@@ -295,12 +295,12 @@ func (e *NuvlaEdgeOTCExporter) ConsumeMetrics(_ context.Context, pm pmetric.Metr
 
 func (e *NuvlaEdgeOTCExporter) sendMetricsToNuvla(metricMap *[]map[string]interface{}) error {
 
-	e.settings.Logger.Info("Sending metrics to Nuvla: ", zap.Any("metricMap", metricMap))
 	for _, currMetric := range *metricMap {
 		time := currMetric["@timestamp"]
 		delete(currMetric, "@timestamp")
 		currMetric["timestamp"] = time
 	}
+	e.settings.Logger.Info("Sending metrics to Nuvla: ", zap.Any("metricMap", metricMap))
 
 	res, err := e.nuvlaApi.BulkOperation(e.cfg.NuvlaApiConfig.ResourceId, "bulk-insert", *metricMap)
 	if err != nil {
