@@ -8,7 +8,6 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 	nuvla "github.com/nuvla/api-client-go"
-	"github.com/nuvla/api-client-go/types"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/exporter"
 	"go.opentelemetry.io/collector/pdata/pcommon"
@@ -74,13 +73,17 @@ func (e *NuvlaEdgeOTCExporter) Start(_ context.Context, _ component.Host) error 
 }
 
 func (e *NuvlaEdgeOTCExporter) StartNuvlaApiClient() error {
-	cred := types.NewApiKeyLogInParams(e.cfg.NuvlaApiConfig.ApiKey, e.cfg.NuvlaApiConfig.ApiSecret)
 
 	opts := nuvla.DefaultSessionOpts()
 	opts.Endpoint = e.cfg.NuvlaApiConfig.Endpoint
-	opts.ReAuthenticate = true
 
-	e.nuvlaApi = nuvla.NewNuvlaClientFromOpts(cred, nuvla.WithEndpoint(e.cfg.NuvlaApiConfig.Endpoint))
+	e.nuvlaApi = nuvla.NewNuvlaClientFromOpts(nil, nuvla.WithEndpoint(e.cfg.NuvlaApiConfig.Endpoint))
+	err := e.nuvlaApi.LoginApiKeys(e.cfg.NuvlaApiConfig.ApiKey, e.cfg.NuvlaApiConfig.ApiSecret)
+
+	if err != nil {
+		e.settings.Logger.Error("Error logging in with api keys: ", zap.Error(err))
+		return err
+	}
 	return nil
 }
 
