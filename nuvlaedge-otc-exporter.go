@@ -17,6 +17,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 )
 
 var (
@@ -295,6 +296,11 @@ func (e *NuvlaEdgeOTCExporter) ConsumeMetrics(_ context.Context, pm pmetric.Metr
 func (e *NuvlaEdgeOTCExporter) sendMetricsToNuvla(metricMap *[]map[string]interface{}) error {
 
 	e.settings.Logger.Info("Sending metrics to Nuvla: ", zap.Any("metricMap", metricMap))
+	for _, currMetric := range *metricMap {
+		time := currMetric["@timestamp"]
+		delete(currMetric, "@timestamp")
+		currMetric["timestamp"] = time
+	}
 
 	res, err := e.nuvlaApi.BulkOperation(e.cfg.NuvlaApiConfig.ResourceId, "bulk-insert", *metricMap)
 	if err != nil {
@@ -394,8 +400,10 @@ func (e *NuvlaEdgeOTCExporter) updateMetric(serviceName *string, metric *pmetric
 		e.settings.Logger.Info("Datapoint ", zap.Any("datapoint", datapoint))
 		// TODO there could be situations of timestamps being very close or same.
 		// Need to handle that.
-		timestamp := datapoint.Timestamp().AsTime().Format("2006-01-02T15:04:05.999Z07:00")
-		currMetricMap["@timestamp"] = timestamp
+		timestamp := datapoint.Timestamp().AsTime()
+		timestamp = timestamp.Add(time.Millisecond * time.Duration(i))
+
+		currMetricMap["@timestamp"] = timestamp.Format(time.RFC3339)
 		//time.Sleep(2 * time.Millisecond)
 		currMetricMap["nuvla.deployment.uuid"] = *deploymentuuid
 
