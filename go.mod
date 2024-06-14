@@ -4,6 +4,7 @@ go 1.22.3
 
 require (
 	github.com/elastic/go-elasticsearch/v8 v8.13.1
+	github.com/nuvla/api-client-go v0.7.7-0.20240614100931-3865f491f55a
 	go.opentelemetry.io/collector/component v0.102.1
 	go.opentelemetry.io/collector/config/configretry v0.102.1
 	go.opentelemetry.io/collector/confmap v0.102.1
@@ -28,7 +29,6 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/nuvla/api-client-go v0.7.7-0.20240614072620-5ac86ba1cfc3 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	go.opentelemetry.io/collector v0.102.1 // indirect
 	go.opentelemetry.io/collector/config/configtelemetry v0.102.1 // indirect
