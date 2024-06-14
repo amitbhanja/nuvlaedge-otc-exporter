@@ -78,6 +78,7 @@ func (e *NuvlaEdgeOTCExporter) StartNuvlaApiClient() error {
 
 	opts := nuvla.DefaultSessionOpts()
 	opts.Endpoint = e.cfg.NuvlaApiConfig.Endpoint
+	opts.ReAuthenticate = true
 
 	e.nuvlaApi = nuvla.NewNuvlaClientFromOpts(cred, nuvla.WithEndpoint(e.cfg.NuvlaApiConfig.Endpoint))
 	return nil
