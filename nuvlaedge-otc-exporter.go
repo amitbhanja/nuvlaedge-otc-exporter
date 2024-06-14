@@ -315,7 +315,7 @@ func (e *NuvlaEdgeOTCExporter) addMetricsInES(serviceName *string, metricMap *[]
 		return err
 	}
 
-	indexName := fmt.Sprintf("%s-%s", e.cfg.ElasticsearchConfig.IndexPrefix, serviceName)
+	indexName := fmt.Sprintf("%s-%s", e.cfg.ElasticsearchConfig.IndexPrefix, *serviceName)
 	e.settings.Logger.Info("Adding documents in TSDS ", zap.String("indexName", indexName), zap.Any("metricMap", metricMap))
 
 	err = e.addDocsInTSDS(&indexName, metricMap)
