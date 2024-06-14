@@ -423,6 +423,7 @@ func (e *NuvlaEdgeOTCExporter) updateMetric(serviceName *string, metric *pmetric
 		currMetricMap["@timestamp"] = timestamp.Format(time.RFC3339)
 		//time.Sleep(2 * time.Millisecond)
 		currMetricMap["nuvla.deployment.uuid"] = *deploymentuuid
+		currMetricMap["service.name"] = *serviceName
 
 		switch datapoint.ValueType() {
 		case pmetric.NumberDataPointValueTypeInt:
