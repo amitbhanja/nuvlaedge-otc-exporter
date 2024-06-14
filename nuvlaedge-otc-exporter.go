@@ -15,6 +15,7 @@ import (
 	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.uber.org/zap"
 	"io"
+	"net/http/httputil"
 	"os"
 	"strings"
 	"time"
@@ -307,10 +308,22 @@ func (e *NuvlaEdgeOTCExporter) sendMetricsToNuvla(metricMap *[]map[string]interf
 		e.settings.Logger.Error("Error in operation bulk insert: ", zap.Error(err))
 		return err
 	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			e.settings.Logger.Error("Error closing the response body: ", zap.Error(err))
+		}
+	}(res.Body)
+
+	dump, httperr := httputil.DumpResponse(res, true)
+	if httperr != nil {
+		e.settings.Logger.Error("Error dumping the response: ", zap.Error(httperr))
+	}
 	if res.StatusCode >= 400 {
-		e.settings.Logger.Error("Error sending metrics to Nuvla: ", zap.Any("response", res))
+		e.settings.Logger.Error("Error sending metrics to Nuvla: ", zap.String("dump", string(dump)))
 		return fmt.Errorf("error sending metrics to Nuvla: %s", res.Status)
 	}
+	e.settings.Logger.Info("Metrics sent to Nuvla: ", zap.String("dump", string(dump)))
 	return nil
 }
 
