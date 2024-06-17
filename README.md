@@ -2,7 +2,7 @@
 An OTC exporter which would convert data into different formats and send to different destinations 
 like elastic search, nuvla api and other cloud endpoints like S3, GCS etc.
 
-TODO : Nuvla APi and other cloud endpoints support will come later.
+TODO : Other cloud endpoints support will come later.
 
 For elasticsearch, the exporter would create a timeseries resource (<index_prefix>-<application_name>) if not present.
 Then all the metric datapoints are stored. We take the data attributes along with metrics data and nuvla.deployment.uuid.
